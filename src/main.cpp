@@ -21,6 +21,7 @@ void fillFalse(bool m[n][n]);
 int main(int argc, char* argv[]){
     int windowW=1280, windowH=720, dead_cellW=16, dead_cellH=16, borderSize=40, aliveCount=0, eatenByBorderCount=0, evolutionsN=1;
     const int excess=5, textSize=18;
+    int setupX=borderSize, setupY=borderSize, coordI=excess, coordJ=excess, maxI=n-excess-1, maxJ=n-excess-1;
     float textH, textW, text2W, text2H, text3W, text3H, text4W, text4H;
     const char text[93]="[w] Move up\n[a] Move left\n[s] Move down\n[d] Move right\n[f] Change state\n[g] Start simulation";
     const char text2[57]="Number of generations:\nNumber of alive cells (estimate):";
@@ -36,9 +37,9 @@ int main(int argc, char* argv[]){
     if(TTF_Init()!=0){
         cout<<"TTF_init has failed. Error: "<<SDL_GetError()<<endl;
     }
-    RenderWindow window("Game V1.0", windowW, windowH);
+    RenderWindow window("John Cornway's Game of Life", windowW, windowH);
 
-    bool gameRunning=true;
+    bool gameRunning=true, setupPattern=true;
     SDL_Event event;
     
     SDL_Texture* background = window.loadTexture("../res/gfx/background.png");
@@ -51,63 +52,129 @@ int main(int argc, char* argv[]){
 
     fillFalse(m1);
     fillFalse(m2);
-    setMat(m1, excess);
+    //setMat(m1, excess);
     
     while(gameRunning){
         aliveCount=0;
         int startTicks=SDL_GetTicks();
         int frameTicks=SDL_GetTicks()-startTicks;
+
+        window.clear();
         
         while(SDL_PollEvent(&event)){
             if(event.type==SDL_QUIT){
                 gameRunning=false;
             }
-        }
-
-        window.clear();
-        
-        window.renderTexture(background, 0,0,windowW, windowH, 0,0,windowW, windowH);
-
-        for(int i=0; i<n; i++){
-            for(int j=0; j<n; j++){
-                nextState(m1, m2, i, j, aliveCount);
-            }
-        }
-        evolutionsN++;
-        setFalseBorder(m2, eatenByBorderCount);
-        copyMat(m1, m2);
-
-        temp_gen_str=to_string(evolutionsN);
-        const char* text3=temp_gen_str.c_str();
-        temp_alive_str=to_string(aliveCount+eatenByBorderCount);
-        const char* text4=temp_alive_str.c_str();
-
-        for(int i=excess; i<n-excess; i++){
-            for(int j=excess; j<n-excess; j++){
-                if(m1[i][j]){
-                    window.renderTexture(dead_cell, 0,0,dead_cellW, dead_cellH, (j-excess)*dead_cellW+borderSize, (i-excess)*dead_cellH+borderSize, dead_cellW, dead_cellH);
+            if(event.type==SDL_KEYDOWN){
+                switch(event.key.keysym.sym){
+                    case SDLK_w:{
+                        setupY=setupY-dead_cellH;
+                        coordI--;
+                        break;
+                    }
+                    case SDLK_a:{
+                        setupX=setupX-dead_cellW;
+                        coordJ--;
+                        break;
+                    }
+                    case SDLK_s:{
+                        setupY=setupY+dead_cellH;
+                        coordI++;
+                        break;
+                    }
+                    case SDLK_d:{
+                        setupX=setupX+dead_cellW;
+                        coordJ++;
+                        break;
+                    }
+                    case SDLK_f:{
+                        m1[coordI][coordJ]=(!m1[coordI][coordJ]);
+                        break;
+                    }
+                    case SDLK_g:{
+                        setupPattern=false;
+                        break;
+                    }
                 }
             }
         }
-        
-        SDL_Texture* aliveCountText=window.textToTexture(poppins, black, text4, text4W, text4H);
-        SDL_Texture* generationNumberText=window.textToTexture(poppins, black, text3, text3W, text3H);
-
-        window.renderTexture(instructions, 0,0,textW,textH,800,100,textW,textH);
-        window.renderTexture(generationText, 0,0,text2W,text2H,800,360,text2W,text2H);
-
-        window.renderTexture(generationNumberText, 0,0,text3W,text3H,1020,360,text3W,text3H);
-        window.renderTexture(aliveCountText, 0,0,text4W,text4H,1103,387,text4W,text4H);
-
-        window.display();
-        
-        if(frameTicks<1000/window.getRefreshRate()){
-           SDL_Delay(1000/window.getRefreshRate()-frameTicks); 
+        if(coordI<excess){
+            coordI=excess;
+            setupY=borderSize;
+        }else{
+            if(coordJ<excess){
+                coordJ=excess;
+                setupX=borderSize;
+            }else{
+                if(coordJ>maxJ){
+                    coordJ=maxJ;
+                    setupX=borderSize+(dead_cellW*(maxJ-excess));
+                }else{
+                    if(coordI>maxI){
+                        coordI=maxI;
+                        setupY=borderSize+(dead_cellH*(maxJ-excess));
+                    }
+                }
+            }
         }
 
-        SDL_Delay(100);
-        SDL_DestroyTexture(generationNumberText);
-        SDL_DestroyTexture(aliveCountText);
+        if(setupPattern){
+            window.renderTexture(background, 0,0,windowW, windowH, 0,0,windowW, windowH);
+            window.renderTexture(instructions, 0,0,textW,textH,800,100,textW,textH);
+            for(int i=excess; i<n-excess; i++){
+                for(int j=excess; j<n-excess; j++){
+                    if(m1[i][j]){
+                        window.renderTexture(dead_cell, 0,0,dead_cellW, dead_cellH, (j-excess)*dead_cellW+borderSize, (i-excess)*dead_cellH+borderSize, dead_cellW, dead_cellH);
+                    }
+                }
+            }
+            window.renderTexture(cursor, 0,0,dead_cellW, dead_cellH, setupX, setupY, dead_cellW, dead_cellH);
+            window.display();
+            SDL_Delay(30);
+        }else{
+            for(int i=0; i<n; i++){
+                for(int j=0; j<n; j++){
+                    nextState(m1, m2, i, j, aliveCount);
+                }
+            }
+            evolutionsN++;
+            setFalseBorder(m2, eatenByBorderCount);
+            copyMat(m1, m2);
+
+            temp_gen_str=to_string(evolutionsN);
+            const char* text3=temp_gen_str.c_str();
+            temp_alive_str=to_string(aliveCount+eatenByBorderCount);
+            const char* text4=temp_alive_str.c_str();
+
+            window.renderTexture(background, 0,0,windowW, windowH, 0,0,windowW, windowH);
+
+            for(int i=excess; i<n-excess; i++){
+                for(int j=excess; j<n-excess; j++){
+                    if(m1[i][j]){
+                        window.renderTexture(dead_cell, 0,0,dead_cellW, dead_cellH, (j-excess)*dead_cellW+borderSize, (i-excess)*dead_cellH+borderSize, dead_cellW, dead_cellH);
+                    }
+                }
+            }
+            
+            SDL_Texture* aliveCountText=window.textToTexture(poppins, black, text4, text4W, text4H);
+            SDL_Texture* generationNumberText=window.textToTexture(poppins, black, text3, text3W, text3H);
+
+            window.renderTexture(instructions, 0,0,textW,textH,800,100,textW,textH);
+            window.renderTexture(generationText, 0,0,text2W,text2H,800,360,text2W,text2H);
+
+            window.renderTexture(generationNumberText, 0,0,text3W,text3H,1020,360,text3W,text3H);
+            window.renderTexture(aliveCountText, 0,0,text4W,text4H,1103,387,text4W,text4H);
+
+            window.display();
+
+            SDL_DestroyTexture(generationNumberText);
+            SDL_DestroyTexture(aliveCountText);
+            SDL_Delay(100);
+            
+        }
+        if(frameTicks<1000/window.getRefreshRate()){
+            SDL_Delay(1000/window.getRefreshRate()-frameTicks); 
+        }
     }
     window.cleanUp();
     SDL_Quit();
@@ -167,7 +234,7 @@ void setFalseBorder(bool m[n][n], int &eatenByBorderCount){
     }
 }
 
-void setMat(bool m[n][n], int excess){
+/*void setMat(bool m[n][n], int excess){
     m[5+excess][1+excess]=true;
     m[6+excess][1+excess]=true;
     m[5+excess][2+excess]=true;
@@ -205,7 +272,7 @@ void setMat(bool m[n][n], int excess){
     m[4+excess][35+excess]=true;
     m[3+excess][36+excess]=true;
     m[4+excess][36+excess]=true;
-}
+}*/
 
 void copyMat(bool m1[n][n], bool m2[n][n]){
     for(int i=0; i<n; i++){
