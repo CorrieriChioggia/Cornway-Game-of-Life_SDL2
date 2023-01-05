@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
     }
     RenderWindow window("John Cornway's Game of Life", windowW, windowH);
 
-    bool gameRunning=true, setupPattern=true;
+    bool gameRunning=true, setupPattern=true, splashScreen=true;
     SDL_Event event;
     
     SDL_Texture* background = window.loadTexture("../res/gfx/background.png");
@@ -49,6 +49,7 @@ int main(int argc, char* argv[]){
     SDL_Color black={0,0,0};
     SDL_Texture* instructions=window.textToTexture(poppins, black, text, textW, textH);
     SDL_Texture* generationText=window.textToTexture(poppins, black, text2, text2W, text2H);
+    SDL_Texture* splash_screen_image=window.loadTexture("../res/gfx/splashscreen.png");
 
     fillFalse(m1);
     fillFalse(m2);
@@ -117,7 +118,13 @@ int main(int argc, char* argv[]){
                 }
             }
         }
-
+        if(splashScreen){
+            window.renderTexture(splash_screen_image, 0,0, windowW, windowH, 0,0, windowW, windowH);
+            window.display();
+            SDL_Delay(2000);
+            SDL_DestroyTexture(splash_screen_image);
+            splashScreen=false;
+        }else{
         if(setupPattern){
             window.renderTexture(background, 0,0,windowW, windowH, 0,0,windowW, windowH);
             window.renderTexture(instructions, 0,0,textW,textH,800,100,textW,textH);
@@ -172,6 +179,7 @@ int main(int argc, char* argv[]){
             SDL_Delay(100);
             
         }
+    }
         if(frameTicks<1000/window.getRefreshRate()){
             SDL_Delay(1000/window.getRefreshRate()-frameTicks); 
         }
