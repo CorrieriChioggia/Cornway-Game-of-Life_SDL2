@@ -1,5 +1,5 @@
 #include<RenderWindow.h>
-#include<Entity.h>
+//#include<Entity.h>
 
 #include<SDL.h>
 #include<SDL_image.h>
@@ -35,7 +35,7 @@ void RenderWindow::clear(){
     SDL_RenderClear(renderer);
 }
 
-void RenderWindow::renderEntity(Entity& p_entity){
+/*void RenderWindow::renderEntity(Entity& p_entity){
     SDL_Rect src;
     src.x=p_entity.getCurrentFrame().x;
     src.y=p_entity.getCurrentFrame().y;
@@ -48,7 +48,7 @@ void RenderWindow::renderEntity(Entity& p_entity){
     dest.w=p_entity.getCurrentFrame().w;
     dest.h=p_entity.getCurrentFrame().h;
     SDL_RenderCopy(renderer, p_entity.getTex(), &src, &dest);
-}
+}*/
 
 void RenderWindow::renderTexture(SDL_Texture* p_tex, int srcx, int srcy, int srcw, int srch, int destx, int desty, int destw, int desth){
     SDL_Rect src;

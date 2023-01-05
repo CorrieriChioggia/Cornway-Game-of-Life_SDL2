@@ -7,7 +7,6 @@
 #include<string>
 
 #include<RenderWindow.h>
-#include<Entity.h>
 
 using namespace std;
 
