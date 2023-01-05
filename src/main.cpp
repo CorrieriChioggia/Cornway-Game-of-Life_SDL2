@@ -43,12 +43,12 @@ int main(int argc, char* argv[]){
     SDL_Event event;
     
     SDL_Texture* background = window.loadTexture("../res/gfx/background.png");
-    SDL_Texture* dead_cell=window.loadTexture("../res/gfx/black_square.png");
+    SDL_Texture* dead_cell=window.loadTexture("../res/gfx/dead_square.png");
     SDL_Texture* cursor=window.loadTexture("../res/gfx/red_cursor.png");
     TTF_Font* poppins=TTF_OpenFont("../fonts/Poppins-medium.ttf", textSize);
-    SDL_Color black={0,0,0};
-    SDL_Texture* instructions=window.textToTexture(poppins, black, text, textW, textH);
-    SDL_Texture* generationText=window.textToTexture(poppins, black, text2, text2W, text2H);
+    SDL_Color white={255,255,255};
+    SDL_Texture* instructions=window.textToTexture(poppins, white, text, textW, textH);
+    SDL_Texture* generationText=window.textToTexture(poppins, white, text2, text2W, text2H);
     SDL_Texture* splash_screen_image=window.loadTexture("../res/gfx/splashscreen.png");
 
     fillFalse(m1);
@@ -163,8 +163,8 @@ int main(int argc, char* argv[]){
                 }
             }
             
-            SDL_Texture* aliveCountText=window.textToTexture(poppins, black, text4, text4W, text4H);
-            SDL_Texture* generationNumberText=window.textToTexture(poppins, black, text3, text3W, text3H);
+            SDL_Texture* aliveCountText=window.textToTexture(poppins, white, text4, text4W, text4H);
+            SDL_Texture* generationNumberText=window.textToTexture(poppins, white, text3, text3W, text3H);
 
             window.renderTexture(instructions, 0,0,textW,textH,800,100,textW,textH);
             window.renderTexture(generationText, 0,0,text2W,text2H,800,360,text2W,text2H);
