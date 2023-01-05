@@ -2,6 +2,7 @@
 #include<SDL.h>
 #include<SDL_image.h>
 #include<SDL_ttf.h>
+#include<SDL_mixer.h>
 #include<sstream>
 #include<string>
 
@@ -27,6 +28,7 @@ int main(int argc, char* argv[]){
     const char text2[57]="Number of generations:\nNumber of alive cells (estimate):";
     string temp_gen_str, temp_alive_str;
     bool m1[n][n], m2[n][n];
+    bool setupPatternNotPlayed=true, playNotPlayed=true;
 
     if(SDL_Init(SDL_INIT_VIDEO)!=0){
         cout<<"SDL_Init has failed. SDL_ERROR: "<<SDL_GetError()<<endl;
@@ -37,6 +39,8 @@ int main(int argc, char* argv[]){
     if(TTF_Init()!=0){
         cout<<"TTF_init has failed. Error: "<<SDL_GetError()<<endl;
     }
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+
     RenderWindow window("John Cornway's Game of Life", windowW, windowH);
 
     bool gameRunning=true, setupPattern=true, splashScreen=true;
@@ -50,6 +54,9 @@ int main(int argc, char* argv[]){
     SDL_Texture* instructions=window.textToTexture(poppins, white, text, textW, textH);
     SDL_Texture* generationText=window.textToTexture(poppins, white, text2, text2W, text2H);
     SDL_Texture* splash_screen_image=window.loadTexture("../res/gfx/splashscreen.png");
+    Mix_Chunk* start = Mix_LoadWAV("../res/sfx/startGame.mp3");
+    Mix_Chunk* mid = Mix_LoadWAV("../res/sfx/setupPattern.mp3");
+    Mix_Chunk* play = Mix_LoadWAV("../res/sfx/play.mp3");
 
     fillFalse(m1);
     fillFalse(m2);
@@ -121,11 +128,16 @@ int main(int argc, char* argv[]){
         if(splashScreen){
             window.renderTexture(splash_screen_image, 0,0, windowW, windowH, 0,0, windowW, windowH);
             window.display();
+            Mix_PlayChannel(-1, start, 0);
             SDL_Delay(2000);
             SDL_DestroyTexture(splash_screen_image);
             splashScreen=false;
         }else{
         if(setupPattern){
+            if(setupPatternNotPlayed){
+                Mix_PlayChannel(-1, mid, 0);
+                setupPatternNotPlayed=false;
+            }
             window.renderTexture(background, 0,0,windowW, windowH, 0,0,windowW, windowH);
             window.renderTexture(instructions, 0,0,textW,textH,800,100,textW,textH);
             for(int i=excess; i<n-excess; i++){
@@ -139,6 +151,10 @@ int main(int argc, char* argv[]){
             window.display();
             SDL_Delay(30);
         }else{
+            if(playNotPlayed){
+                Mix_PlayChannel(-1, play, 0);
+                playNotPlayed=false;
+            }
             for(int i=0; i<n; i++){
                 for(int j=0; j<n; j++){
                     nextState(m1, m2, i, j, aliveCount);
